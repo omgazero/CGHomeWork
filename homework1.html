@@ -121,54 +121,53 @@ function createGeo(){
     new THREE.Vector3(-40, 30, -65)
   );
 
-  var face;
-  face = new THREE.Face3(0, 1, 2);
+  face = new THREE.Face3(2, 0, 1);//1
   geometry.faces.push(face);
-  face = new THREE.Face3(1, 2, 3);
+  face = new THREE.Face3(3, 2, 1);//2
   geometry.faces.push(face);
-  face = new THREE.Face3(1, 3, 4);
+  face = new THREE.Face3(1, 4, 3);//3
   geometry.faces.push(face);
-	face = new THREE.Face3(3, 4, 5);
+	face = new THREE.Face3(3, 5, 4);//4
   geometry.faces.push(face);
-  face = new THREE.Face3(0, 1, 5);
+  face = new THREE.Face3(5, 0, 1);//5
   geometry.faces.push(face);
-  face = new THREE.Face3(1, 4, 5);
+  face = new THREE.Face3(1, 4, 5);//6
   geometry.faces.push(face);
-  face = new THREE.Face3(2, 3, 6);
+  face = new THREE.Face3(3, 2, 6);//7
   geometry.faces.push(face);
-  face = new THREE.Face3(3, 6, 7);
+  face = new THREE.Face3(6, 7, 3);//8
   geometry.faces.push(face);
-  face = new THREE.Face3(3, 5, 7);
+  face = new THREE.Face3(5, 3, 7);//9
   geometry.faces.push(face);
-  face = new THREE.Face3(5, 7, 9);
+  face = new THREE.Face3(7, 9, 5);//10
   geometry.faces.push(face);
-  face = new THREE.Face3(0, 5, 8);
+  face = new THREE.Face3(5, 0, 8);//11
   geometry.faces.push(face);
-  face = new THREE.Face3(5, 8, 9);
+  face = new THREE.Face3(8, 9, 5);//12
   geometry.faces.push(face);
-  face = new THREE.Face3(6, 8, 9);
+  face = new THREE.Face3(9, 8, 6);//13
   geometry.faces.push(face);
-  face = new THREE.Face3(6, 7, 9);
+  face = new THREE.Face3(6, 7, 9);//14
   geometry.faces.push(face);
-  face = new THREE.Face3(0, 10, 11);
+  face = new THREE.Face3(0, 10, 11);//15
   geometry.faces.push(face);
-  face = new THREE.Face3(0, 2, 11);
+  face = new THREE.Face3(0, 2, 11);//16
   geometry.faces.push(face);
-  face = new THREE.Face3(6, 8, 12);
+  face = new THREE.Face3(12, 8, 6);//17
   geometry.faces.push(face);
-  face = new THREE.Face3(6, 12, 13);
+  face = new THREE.Face3(6, 13, 12);//18
   geometry.faces.push(face);
-  face = new THREE.Face3(2, 11, 13);
+  face = new THREE.Face3(2, 11, 13);//19
   geometry.faces.push(face);
-  face = new THREE.Face3(2, 6, 13);
+  face = new THREE.Face3(13, 6, 2);//20
   geometry.faces.push(face);
-  face = new THREE.Face3(0, 8, 10);
+  face = new THREE.Face3(10, 0, 8);//21
   geometry.faces.push(face);
-  face = new THREE.Face3(8, 10, 12);
+  face = new THREE.Face3(8, 12, 10);//22
   geometry.faces.push(face);
-  face = new THREE.Face3(10, 11, 12);
+  face = new THREE.Face3(11, 10, 12);//23
   geometry.faces.push(face);
-  face = new THREE.Face3(11, 12, 13);
+  face = new THREE.Face3(12, 13, 11);//24
   geometry.faces.push(face);
   
   
@@ -176,17 +175,40 @@ function createGeo(){
   geometry.computeFaceNormals();
   //geometry.computeVertexNormals();
   
-  let faceVertex = [new THREE.Vector2(1,0.5), new THREE.Vector2(0.25, 0.5), new THREE.Vector2(0.25,0.25)];
+  /*let faceVertex = [new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0)];
   
   for(let i = 0; i < geometry.faces.length; i++)
- 		 geometry.faceVertexUvs[0].push(faceVertex);
+ 		 geometry.faceVertexUvs[0].push(faceVertex);*/
   
-  
-	let loader = new THREE.TextureLoader();
-  loader.crossOrigin = '';
-  let texture = loader.load('https://i.imgur.com/DrvlmNW.jpg');	
-  
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//1
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//2
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//3
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//4
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//5
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//6
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//7
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//8
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//9
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//10
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//11
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//12
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(0.5,0) ]);//13
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(0.5,0) ]);//14
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(0.5,0) ]);//15
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(0.5,0) ]);//16
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(0.5,0.25) ]);//17
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(0.5,0.25)]);//18
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//19
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//20
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//21
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//22
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//23
+geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//24
 
+let loader = new THREE.TextureLoader();
+  loader.crossOrigin = '';
+//  let texture = loader.load('https://i.imgur.com/DrvlmNW.jpg');	
+let texture = loader.load('https://i.imgur.com/p8CRm9W.jpg');	
   var material = new THREE.MeshPhongMaterial({
  		map: texture,
     transparent: true,
