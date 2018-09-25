@@ -210,8 +210,7 @@ let loader = new THREE.TextureLoader();
 //  let texture = loader.load('https://i.imgur.com/DrvlmNW.jpg');	
 let texture = loader.load('https://i.imgur.com/p8CRm9W.jpg');	
   var material = new THREE.MeshPhongMaterial({
- 		map: texture,
-    transparent: true,
+    map: texture,
     side: THREE.DoubleSide
   });
   return new THREE.Mesh(geometry, material);
