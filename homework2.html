@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<style>
+#info {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #ff0000;
+}
+
+#gui {
+    position: absolute;
+    top: 40px;
+    left: 20px;
+    height: 350px;
+}
+
+</style>
+</head>
+
+<body> 
+<div id="info">
+  homework1
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/96/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
+<script>
+
+var frame, scene, light, light2, camera, renderer, controls, stats;
+var slhelper, lschelper;
+var dlhelper, dlshelper;
+var angle = 0;
+
+init();
+animate();
+
+
+function init() {
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x888888);
+  document.body.appendChild(renderer.domElement);
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+camera.position.y = 50;
+
+  camera.position.z = 250;
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  stats = new Stats();
+  stats.showPanel(0);
+  stats.domElement.style.position = 'absolute';
+  stats.domElement.style.left = '0px';
+  stats.domElement.style.top = '0px';
+  document.body.appendChild(stats.domElement);
+  
+  ///SpotLight Light
+  
+  /*var ambientLight = new THREE.AmbientLight(0x444444);
+  scene.add(ambientLight);*/
+  light = new THREE.SpotLight(0xffffff, 1, 1000);
+  light.position.set(0, 150, 40);
+  scene.add(light);
+  light.castShadow = true;
+  light.shadow.mapSize.width = 1024;
+  light.shadow.mapSize.height = 1024;
+  light.shadow.camera.near = 5;
+  light.shadow.camera.far = 100;
+  light.shadow.camera.fov = light.angle / Math.PI * 180 *2;
+  light.shadow.bias = -0.01;
+  
+  slhelper = new THREE.SpotLightHelper(light);
+  lschelper = new THREE.CameraHelper(light.shadow.camera);
+  scene.add(slhelper);
+  scene.add(lschelper);
+  
+  ///Directional Light
+  light2 = new THREE.DirectionalLight( 0xFFFFFF , 1);
+  light2.position.set( 100, 200, -100 );
+  light2.castShadow = true;
+  light2.shadow.mapSize.width = 1024;
+  light2.shadow.mapSize.height = 1024;
+  light2.shadow.camera.left = -400;
+  light2.shadow.camera.top = -400;
+  light2.shadow.camera.right = 400;
+  light2.shadow.camera.bottom = 400;
+  light2.shadow.camera.near = 1;
+  light2.shadow.camera.far = 500;
+  light2.shadow.bias = -0.01;
+  scene.add(light2);
+  
+  dlhelper = new THREE.DirectionalLightHelper(light2, 5);
+  dlshelper = new THREE.CameraHelper(light2.shadow.camera);
+  scene.add(dlhelper);
+  scene.add(dlshelper);
+  
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  
+  ///frame
+  frame = createGeo();
+  frame.castShadow = true;
+  frame.receiveShadow = true;
+  light.target = frame;
+  scene.add(frame);
+  
+  ///plane
+  let loader = new THREE.TextureLoader();
+  loader.crossOrigin = '';
+  let texture = loader.load('https://i.imgur.com/p8CRm9W.jpg');	
+  let material = new THREE.MeshPhongMaterial({
+    map: texture
+  });
+  var plane = new THREE.Mesh( new THREE.PlaneGeometry(700, 700, 20, 20), material );
+  plane.rotation.x = -Math.PI/2;
+  plane.position.y -= 100;
+  plane.receiveShadow = true;
+  scene.add(plane);
+  
+  ///GUI
+  gcontrols = new function() {
+	this.castShadow = true;
+	this.intensity = 1;
+	this.width = 1024;
+	this.height = 1024;
+	this.slhelper = true;
+	this.lschelper = true;
+  }
+  gcontrols2 = new function() {
+	this.castShadow = true;
+	this.intensity = 0;
+	this.width = 1024;
+	this.height = 1024;
+	this.dlhelper = false;
+	this.dlshelper = false;
+  }
+  
+  var gui = new dat.GUI();
+  gui.domElement.id = 'gui';
+  var f1 = gui.addFolder("SpotLightShadow");
+  f1.add(gcontrols, 'castShadow');
+  f1.add(gcontrols, 'intensity', 0, 1);
+  f1.add(gcontrols, 'width', 256, 1024);
+  f1.add(gcontrols, 'height', 256, 1024);
+  f1.add(gcontrols, 'slhelper');
+  f1.add(gcontrols, 'lschelper');
+  var f2 = gui.addFolder("DirectionalLightShadow");
+  f2.add(gcontrols2, 'castShadow');
+  f2.add(gcontrols2, 'intensity', 0, 1);
+  f2.add(gcontrols2, 'width', 256, 1024);
+  f2.add(gcontrols2, 'height', 256, 1024);
+  f2.add(gcontrols2, 'dlhelper');
+  f2.add(gcontrols2, 'dlshelper');
+}
+
+function animate() {
+  stats.begin();
+  controls.update();
+  
+ //frame.rotation.y += 0.02;
+  ///SpotLightShadow
+  light.castShadow = gcontrols.castShadow;
+  light.intensity = gcontrols.intensity;
+  light.shadow.mapSize.width = gcontrols.width;
+  light.shadow.mapSize.height = gcontrols.height;
+  slhelper.visible = gcontrols.slhelper;
+  lschelper.visible = gcontrols.lschelper;
+  ///
+  
+  ///DirectionalLightShadow
+  light2.castShadow = gcontrols2.castShadow;
+  light2.intensity = gcontrols2.intensity;
+  light2.shadow.mapSize.width = gcontrols2.width;
+  light2.shadow.mapSize.height = gcontrols2.height;
+  dlhelper.visible = gcontrols2.dlhelper;
+  dlshelper.visible = gcontrols2.dlshelper;
+  ///
+  
+  ///frame
+  angle += 0.05;
+  frame.position.set( -150*Math.cos(angle), 0, 150*Math.sin(angle) );
+  frame.rotation.y = angle + Math.PI/2;
+  ///
+  stats.end();
+  requestAnimationFrame(animate);
+  render();
+  
+}
+
+function render() {
+
+  renderer.render(scene, camera);
+}
+
+function createGeo(){
+	  var geometry = new THREE.Geometry();
+  geometry.vertices.push(
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 0, 70),
+    new THREE.Vector3(0, 30, 0),
+    new THREE.Vector3(40, 30, 0),
+    new THREE.Vector3(40, 0, 70),
+    new THREE.Vector3(40, 0, 0),
+    new THREE.Vector3(0, 30, -65),
+    new THREE.Vector3(40, 30, -65),
+    new THREE.Vector3(0, 0, -65),
+    new THREE.Vector3(40, 0, -65),
+    new THREE.Vector3(-40, 0, 0),
+    new THREE.Vector3(-40, 30, 0),
+    new THREE.Vector3(-40, 0, -65),
+    new THREE.Vector3(-40, 30, -65)
+  );
+
+  face = new THREE.Face3(2, 0, 1);//1
+  geometry.faces.push(face);
+  face = new THREE.Face3(3, 2, 1);//2
+  geometry.faces.push(face);
+  face = new THREE.Face3(1, 4, 3);//3
+  geometry.faces.push(face);
+  face = new THREE.Face3(3, 5, 4);//4
+  geometry.faces.push(face);
+  face = new THREE.Face3(5, 0, 1);//5
+  geometry.faces.push(face);
+  face = new THREE.Face3(1, 4, 5);//6
+  geometry.faces.push(face);
+  face = new THREE.Face3(3, 2, 6);//7
+  geometry.faces.push(face);
+  face = new THREE.Face3(6, 7, 3);//8
+  geometry.faces.push(face);
+  face = new THREE.Face3(5, 3, 7);//9
+  geometry.faces.push(face);
+  face = new THREE.Face3(7, 9, 5);//10
+  geometry.faces.push(face);
+  face = new THREE.Face3(5, 0, 8);//11
+  geometry.faces.push(face);
+  face = new THREE.Face3(8, 9, 5);//12
+  geometry.faces.push(face);
+  face = new THREE.Face3(9, 8, 6);//13
+  geometry.faces.push(face);
+  face = new THREE.Face3(6, 7, 9);//14
+  geometry.faces.push(face);
+  face = new THREE.Face3(0, 10, 11);//15
+  geometry.faces.push(face);
+  face = new THREE.Face3(0, 2, 11);//16
+  geometry.faces.push(face);
+  face = new THREE.Face3(12, 8, 6);//17
+  geometry.faces.push(face);
+  face = new THREE.Face3(6, 13, 12);//18
+  geometry.faces.push(face);
+  face = new THREE.Face3(2, 11, 13);//19
+  geometry.faces.push(face);
+  face = new THREE.Face3(13, 6, 2);//20
+  geometry.faces.push(face);
+  face = new THREE.Face3(10, 0, 8);//21
+  geometry.faces.push(face);
+  face = new THREE.Face3(8, 12, 10);//22
+  geometry.faces.push(face);
+  face = new THREE.Face3(11, 10, 12);//23
+  geometry.faces.push(face);
+  face = new THREE.Face3(12, 13, 11);//24
+  geometry.faces.push(face);
+  
+  
+  geometry.computeBoundingSphere();
+  geometry.computeFaceNormals();
+  
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//1
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//2
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//3
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//4
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//5
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//6
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//7
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//8
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//9
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//10
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//11
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//12
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(0.5,0) ]);//13
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(0.5,0) ]);//14
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(0.5,0) ]);//15
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(0.5,0) ]);//16
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(0.5,0.25) ]);//17
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(0.5,0.25)]);//18
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//19
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//20
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//21
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.5), new THREE.Vector2(0, 0), new THREE.Vector2(1,0) ]);//22
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//23
+  geometry.faceVertexUvs[0].push([ new THREE.Vector2(0,0.75), new THREE.Vector2(0, 0.25), new THREE.Vector2(1,0.25) ]);//24
+
+  let loader = new THREE.TextureLoader();
+  loader.crossOrigin = '';
+  let texture = loader.load('https://i.imgur.com/p8CRm9W.jpg');	
+  var material = new THREE.MeshPhongMaterial({
+    map: texture,
+    side: THREE.DoubleSide
+  });
+  return new THREE.Mesh(geometry, material);
+}
+
+
+</script>
+</body>
+
+</html>
