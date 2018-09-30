@@ -19,7 +19,9 @@
     left: 20px;
     height: 350px;
 }
-
+body {
+  overflow: hidden;
+}
 </style>
 </head>
 
@@ -50,10 +52,10 @@ function init() {
 
   scene = new THREE.Scene();
 
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
-camera.position.y = 50;
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+  camera.position.y = 500;
 
-  camera.position.z = 250;
+  camera.position.z = 600;
 
   controls = new THREE.OrbitControls(camera, renderer.domElement);
 
@@ -161,6 +163,8 @@ camera.position.y = 50;
   f2.add(gcontrols2, 'height', 256, 1024);
   f2.add(gcontrols2, 'dlhelper');
   f2.add(gcontrols2, 'dlshelper');
+  
+  window.addEventListener( 'resize', onWindowResize, false );
 }
 
 function animate() {
@@ -194,6 +198,7 @@ function animate() {
   stats.end();
   requestAnimationFrame(animate);
   render();
+
   
 }
 
@@ -309,6 +314,11 @@ function createGeo(){
   return new THREE.Mesh(geometry, material);
 }
 
+function onWindowResize() {
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize( window.innerWidth, window.innerHeight );
+}
 
 </script>
 </body>
