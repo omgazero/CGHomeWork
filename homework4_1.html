@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<style>
+#info {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #000000;
+}
+
+body {
+  overflow: hidden;
+}
+
+
+</style>
+</head>
+
+<body> 
+<div id="info">
+  GCHW4_1
+  <br>WASD to move, left&right to rotate
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/96/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script src="https://jyunming-chen.github.io/tutsplus/js/KeyboardState.js"></script>
+<script>
+var frame, scene, light, camera, renderer, controls;
+var ball, box, width = 50, height = 100, cx = 0, cy = 0, max = [width/2, height/2], min = [-width/2, -height/2];
+var keyboard = new KeyboardState();
+var raycaster;
+var mouse = new THREE.Vector2();
+var pickables = [];
+
+class Point2{
+	constructor(x, y){
+  	this.x = x;
+    this.y = y;
+  }
+
+}
+
+class Box2{
+	constructor(max, min){
+  	this.max = max;
+    this.min = min;
+  
+  }
+
+}
+
+
+init();
+animate();
+
+function init() {
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x888888);
+  document.body.appendChild(renderer.domElement);
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+  camera.position.y = 200;
+
+ 	controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+	controls.enableKeys = false;
+  
+  light = new THREE.DirectionalLight( 0xFFFFFF , 1);
+  scene.add(light);
+  
+  
+  /*var gridXZ = new THREE.GridHelper(500, 20, 'red', 'white');
+  scene.add(gridXZ);*/
+  ////
+  ball = new THREE.Mesh( new THREE.CylinderGeometry(10,10, 10, 20, 20), new THREE.MeshBasicMaterial({color: 0xff0000 }) );
+  scene.add(ball);
+  
+  plane = new THREE.Mesh( new THREE.PlaneGeometry(1000,1000), new THREE.MeshBasicMaterial( ));
+  plane.rotation.x = -Math.PI/2;
+  scene.add(plane);
+  pickables = [plane];
+  
+  box = new THREE.Mesh(	new THREE.BoxGeometry(width, height, 20), new THREE.MeshBasicMaterial( {
+  color: 0x0000ff,
+  transparent: true,
+  opacity: 0.3
+  })	);
+  box.rotation.x = -Math.PI/2;
+  scene.add(box);
+  
+  raycaster = new THREE.Raycaster();
+  document.addEventListener('mousedown', mouseDown, false);
+  window.addEventListener( 'resize', onWindowResize, false );
+}
+
+function animate() {
+  
+  keyboard.update();
+  if(keyboard.pressed('left')){
+  	box.rotation.z += 0.03;
+  }
+  if(keyboard.pressed('right')){
+  	box.rotation.z -= 0.03;
+  }
+  if(keyboard.pressed('W')){
+  	box.position.z -= 1;
+  }
+  if(keyboard.pressed('S')){
+  	box.position.z += 1;
+  }
+  if(keyboard.pressed('A')){
+  	box.position.x -= 1;
+  }
+  if(keyboard.pressed('D')){
+  	box.position.x += 1;
+  }
+  ////
+  if(circleRectCD(cx, cy, 10, max, min)){
+    
+    ball.material.color.setHex(0x00ff00);
+  }
+  else{
+
+    ball.material.color.setHex( 0xff0000 );
+  }
+  ////
+  requestAnimationFrame(animate);
+  render();
+  
+  
+}
+
+function render() {
+				
+  renderer.render(scene, camera);
+}
+
+function checkIntersect(r, c, rad){
+
+	let rad2 = rad * rad;
+  
+  r.max.x -= c.x; r.max.y -= c.y;
+  r.min.x -= c.x; r.min.y -= c.y; 
+  
+  if( r.max.x < 0  ){
+  
+  	if(r.max.y < 0)
+    		return (r.max.x * r.max.x + r.max.y * r.max.y) < rad2 ;
+		else if(r.min.y > 0)
+    		return (r.max.x * r.max.x + r.min.y * r.min.y) < rad2;
+    else
+    		return Math.abs(r.max.x) < rad;
+    		
+  }
+  else if( r.min.x > 0 ){
+  
+  	if( r.max.y < 0 )
+  			return  (r.max.y * r.max.y + r.min.x * r.min.x) < rad2;
+ 		else if( r.min.y > 0 )
+  			return  (r.min.y * r.min.y + r.min.x * r.min.x) < rad2;
+    else
+    		return r.min.x < rad;
+  }
+  else {
+  
+  	if( r.max.y < 0 )
+    		return Math.abs(r.max.y) < rad;
+    else if( r.min.y > 0 )    
+    		return r.min.y < rad;
+    else 
+    		return true;
+  }
+}
+
+function circleRectCD(cx, cy, rad, max, min){
+
+	c = new Point2(cx, cy);
+	r = new Box2( new Point2(max[0], max[1]), new Point2(min[0], min[1]) );
+  
+  let normalMat = new THREE.Matrix3().getNormalMatrix( box.matrixWorld );
+  let xR = new THREE.Vector3(1, 0, 0).applyMatrix3(normalMat).normalize();
+  let yR = new THREE.Vector3(0, 1, 0).applyMatrix3(normalMat).normalize();
+  
+  c.x = ball.position.clone().sub(box.position).dot(xR);
+  c.y = ball.position.clone().sub(box.position).dot(yR);
+  return checkIntersect(r, c, rad);
+}
+
+function mouseDown(event){
+	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  
+
+  raycaster.setFromCamera(mouse, camera);
+  var intersects = raycaster.intersectObjects(pickables);
+
+	cx =  intersects[0].point.x;
+  cy =  intersects[0].point.z;
+  
+  
+  max = [width/2, height/2];
+  min = [-width/2,-height/2];
+  
+  
+  if (intersects.length > 0) {
+  	ball.position.copy(intersects[0].point);
+    
+  }
+  
+}
+
+function onWindowResize() {
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize( window.innerWidth, window.innerHeight );
+}
+window.focus();
+
+</script>
+</body>
+
+</html>
