@@ -31,7 +31,7 @@ body {
 <script src="https://jyunming-chen.github.io/tutsplus/js/KeyboardState.js"></script>
 <script>
 var frame, scene, light, camera, renderer, controls;
-var ball, box, width = 50, height = 100, cx = 0, cy = 0, max = [width/2, height/2], min = [-width/2, -height/2];
+var ball, box, width = 50, height = 100, max = [width/2, height/2], min = [-width/2, -height/2];
 var keyboard = new KeyboardState();
 var raycaster;
 var mouse = new THREE.Vector2();
@@ -65,10 +65,13 @@ function init() {
   document.body.appendChild(renderer.domElement);
 
   scene = new THREE.Scene();
-
+/*
   camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
   camera.position.y = 200;
-
+*/
+	camera = new THREE.OrthographicCamera(-100, 100, 100, -100, 1, 500);
+	camera.position.y = 200;
+	
  	controls = new THREE.OrbitControls(camera, renderer.domElement);
 
 	controls.enableKeys = false;
@@ -80,7 +83,7 @@ function init() {
   /*var gridXZ = new THREE.GridHelper(500, 20, 'red', 'white');
   scene.add(gridXZ);*/
   ////
-  ball = new THREE.Mesh( new THREE.CylinderGeometry(10,10, 10, 20, 20), new THREE.MeshBasicMaterial({color: 0xff0000 }) );
+  ball = new THREE.Mesh( new THREE.CylinderGeometry(10,10, 10, 20, 20), new THREE.MeshBasicMaterial({color: 0x00ff00 }) );
   scene.add(ball);
   
   plane = new THREE.Mesh( new THREE.PlaneGeometry(1000,1000), new THREE.MeshBasicMaterial( ));
@@ -123,13 +126,13 @@ function animate() {
   	box.position.x += 1;
   }
   ////
-  if(circleRectCD(cx, cy, 10, max, min)){
+  if(circleRectCD(10, max, min)){
     
-    ball.material.color.setHex(0x00ff00);
+    ball.material.color.setHex(0xff0000);
   }
   else{
 
-    ball.material.color.setHex( 0xff0000 );
+    ball.material.color.setHex( 0x00ff00 );
   }
   ////
   requestAnimationFrame(animate);
@@ -180,9 +183,9 @@ function checkIntersect(r, c, rad){
   }
 }
 
-function circleRectCD(cx, cy, rad, max, min){
+function circleRectCD(rad, max, min){
 
-	c = new Point2(cx, cy);
+	c = new Point2(0, 0);
 	r = new Box2( new Point2(max[0], max[1]), new Point2(min[0], min[1]) );
   
   let normalMat = new THREE.Matrix3().getNormalMatrix( box.matrixWorld );
@@ -201,10 +204,6 @@ function mouseDown(event){
 
   raycaster.setFromCamera(mouse, camera);
   var intersects = raycaster.intersectObjects(pickables);
-
-	cx =  intersects[0].point.x;
-  cy =  intersects[0].point.z;
-  
   
   max = [width/2, height/2];
   min = [-width/2,-height/2];
