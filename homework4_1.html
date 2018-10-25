@@ -39,19 +39,17 @@ var pickables = [];
 
 class Point2{
 	constructor(x, y){
-  	this.x = x;
-    this.y = y;
+		this.x = x;
+		this.y = y;
   }
-
 }
 
 class Box2{
 	constructor(max, min){
-  	this.max = max;
-    this.min = min;
+		this.max = max;
+		this.min = min;
   
   }
-
 }
 
 
@@ -88,6 +86,7 @@ function init() {
   
   plane = new THREE.Mesh( new THREE.PlaneGeometry(1000,1000), new THREE.MeshBasicMaterial( ));
   plane.rotation.x = -Math.PI/2;
+  plane.position.y -= 3;
   scene.add(plane);
   pickables = [plane];
   
@@ -100,6 +99,7 @@ function init() {
   scene.add(box);
   
   raycaster = new THREE.Raycaster();
+  createNormalHelper(max, min, box);
   document.addEventListener('mousedown', mouseDown, false);
   window.addEventListener( 'resize', onWindowResize, false );
 }
@@ -109,9 +109,11 @@ function animate() {
   keyboard.update();
   if(keyboard.pressed('left')){
   	box.rotation.z += 0.03;
+    normals.forEach( function(e){e.applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.03 )});
   }
   if(keyboard.pressed('right')){
   	box.rotation.z -= 0.03;
+    normals.forEach( function(e){e.applyAxisAngle(new THREE.Vector3(0, 1, 0), -0.03 )});
   }
   if(keyboard.pressed('W')){
   	box.position.z -= 1;
@@ -126,13 +128,21 @@ function animate() {
   	box.position.x += 1;
   }
   ////
-  if(circleRectCD(10, max, min)){
+  let n = circleRectCD(10, max, min);
+  let helper = scene.getObjectByName('helper');
+  if(n!==0){
     
     ball.material.color.setHex(0xff0000);
+    if(n!==5){
+      changeNormalHelper(n, helper);
+      helper.visible = true;
+    }
+    else helper.visible = false;
   }
   else{
 
     ball.material.color.setHex( 0x00ff00 );
+    helper.visible = false;
   }
   ////
   requestAnimationFrame(animate);
@@ -153,35 +163,41 @@ function checkIntersect(r, c, rad){
   r.max.x -= c.x; r.max.y -= c.y;
   r.min.x -= c.x; r.min.y -= c.y; 
   
+  /*
+  	321
+    654
+    987
+  */
   if( r.max.x < 0  ){
   
   	if(r.max.y < 0)
-    		return (r.max.x * r.max.x + r.max.y * r.max.y) < rad2 ;
+    		return (r.max.x * r.max.x + r.max.y * r.max.y) < rad2 ? 1:0;
 		else if(r.min.y > 0)
-    		return (r.max.x * r.max.x + r.min.y * r.min.y) < rad2;
+    		return (r.max.x * r.max.x + r.min.y * r.min.y) < rad2 ? 7:0;
     else
-    		return Math.abs(r.max.x) < rad;
+    		return Math.abs(r.max.x) < rad ? 4:0;
     		
   }
   else if( r.min.x > 0 ){
   
   	if( r.max.y < 0 )
-  			return  (r.max.y * r.max.y + r.min.x * r.min.x) < rad2;
+  			return  (r.max.y * r.max.y + r.min.x * r.min.x) < rad2 ? 3:0;
  		else if( r.min.y > 0 )
-  			return  (r.min.y * r.min.y + r.min.x * r.min.x) < rad2;
+  			return  (r.min.y * r.min.y + r.min.x * r.min.x) < rad2 ? 9:0;
     else
-    		return r.min.x < rad;
+    		return r.min.x < rad ? 6:0;
   }
   else {
   
   	if( r.max.y < 0 )
-    		return Math.abs(r.max.y) < rad;
+    		return Math.abs(r.max.y) < rad ? 2:0;
     else if( r.min.y > 0 )    
-    		return r.min.y < rad;
+    		return r.min.y < rad ? 8:0;
     else 
-    		return true;
+    		return 5;
   }
 }
+
 
 function circleRectCD(rad, max, min){
 
@@ -215,6 +231,35 @@ function mouseDown(event){
   }
   
 }
+
+function createNormalHelper(max, min, box){
+	
+  let p1 = box.localToWorld( new THREE.Vector3(max[0], 0, min[1]) );//1
+	let p2 = box.localToWorld( new THREE.Vector3(max[0], 0, max[1]) );//6
+  let p3 = box.localToWorld( new THREE.Vector3(min[0], 0, min[1]) );//3
+  let p4 = box.localToWorld( new THREE.Vector3(min[0], 0, max[1]) );//8
+  
+  let n1 = p2.clone().sub(p4).normalize();//4
+  let n2 = p2.clone().sub(p1).normalize();//7
+  let n3 = p3.clone().sub(p1).normalize();//5
+  let n4 = p3.clone().sub(p4).normalize();//2
+  
+  normals = [ p1.normalize(),n4,p3.normalize(), n1, new THREE.Vector3(0, 1, 0), n3, p2.normalize(), n2, p4.normalize()];
+  
+  let helper = new THREE.ArrowHelper(normals[0], box.position, 100, 0xff00ff, 20, 10);
+  helper.name = 'helper';
+  scene.add(helper);
+  helper.visible = false;
+}
+
+function changeNormalHelper(n, helper){
+  //	console.log(n);
+  	
+  	helper.setDirection(normals[n-1]);
+    helper.position.copy(box.position);
+  
+}
+
 
 function onWindowResize() {
 		camera.aspect = window.innerWidth / window.innerHeight;
